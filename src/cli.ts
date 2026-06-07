@@ -14,6 +14,7 @@ import { recordUsageEvent } from "./usage.js";
 import { removeLocalSkill } from "./removeLocalSkill.js";
 import { stopSyncingSkill } from "./stopSyncingSkill.js";
 import { updateLocalSkill } from "./updateLocalSkill.js";
+import { auditSkillsRoot, formatAuditReport } from "./audit.js";
 
 const require = createRequire(import.meta.url);
 const program = new Command();
@@ -66,6 +67,30 @@ program
     console.log("");
     console.log(`Git status: ${status || "clean"}`);
     console.log(`Git branch: ${branchSummaryText}`);
+  });
+
+program
+  .command("audit")
+  .argument("[skills-dir]", "Skills directory to audit. Defaults to configured Codex skills directory.")
+  .description("Audit local skills for metadata clarity, structure, and missing referenced assets.")
+  .option("--source <source>", "Source label for the report: codex, agents, or repo", "codex")
+  .option("--json", "Print JSON")
+  .option("--min-score <score>", "Only show skills with score greater than or equal to this value", "0")
+  .action(async (skillsDir, options) => {
+    const source = resolveScanSourceOption(options.source);
+    const minScore = Number.parseInt(options.minScore, 10);
+    if (!Number.isFinite(minScore) || minScore < 0 || minScore > 100) {
+      throw new Error(`Invalid --min-score: ${options.minScore}. Use a number from 0 to 100.`);
+    }
+
+    const targetDir = skillsDir ?? (await loadLocalConfig()).codexSkillsDir;
+    const report = await auditSkillsRoot(targetDir, source);
+    if (options.json) {
+      console.log(JSON.stringify(report, null, 2));
+      return;
+    }
+
+    console.log(formatAuditReport(report, minScore));
   });
 
 program
@@ -200,6 +225,14 @@ function resolveSourceOption(value: string | undefined): "codex" | "agents" | un
   }
 
   throw new Error(`Invalid source: ${value}. Use "codex" or "agents".`);
+}
+
+function resolveScanSourceOption(value: string | undefined): "codex" | "agents" | "repo" {
+  if (value === "codex" || value === "agents" || value === "repo") {
+    return value;
+  }
+
+  throw new Error(`Invalid source: ${value}. Use "codex", "agents", or "repo".`);
 }
 
 function readPackageVersion(): string {

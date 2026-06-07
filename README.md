@@ -1,13 +1,12 @@
-# Skill Sync
+# Skill Sync Plus
 
 [中文说明](./README.zh-CN.md)
 
-[![CI](https://img.shields.io/github/actions/workflow/status/nameczz/skill-sync/ci.yml?branch=main&label=CI)](./.github/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/@nameczz/skill-sync?label=npm)](https://www.npmjs.com/package/@nameczz/skill-sync)
+[![CI](https://img.shields.io/github/actions/workflow/status/daodao166888/skill-sync-plus/ci.yml?branch=main&label=CI)](./.github/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Node >= 20](https://img.shields.io/badge/node-%3E%3D20-339933)](https://nodejs.org/)
 
-Skill Sync is a local-first manager and sync tool for Codex skills. It helps you keep your installed or authored skills in your own Git repository, sync them across computers, and manage them from a Web UI or CLI.
+Skill Sync Plus is a local-first manager, sync tool, and quality auditor for Codex skills. It helps you keep your installed or authored skills in your own Git repository, sync them across computers, manage them from a Web UI or CLI, and spot weak skill metadata before agents rely on it.
 
 Codex / Agent skills are just local files — they don't sync across machines.
 Edit a skill on your work laptop, and it won't show up on your home machine.
@@ -32,13 +31,14 @@ Your skills only travel through your own Git remote.
 - [x] Auto-sync watcher that commits and pushes edits to tracked local skills.
 - [x] Last-used monitoring from local Codex session traces so stale skills are easier to find and delete.
 - [x] Codex Archive session management, including preview, Trash, restore, and unarchive.
+- [x] Skill audit CLI for checking metadata clarity, workflow structure, missing referenced files, and optimization opportunities.
 - [x] Local-first storage: no hosted service, no central backend, and machine-specific config/cache stay out of Git.
 
 ## Future
 
 - [ ] Claude-to-Claude skill sync.
 - [ ] Claude and Codex skill sync/migration.
-- [ ] Skill quality checks and optimization suggestions, such as description clarity, length, discoverability, and structure.
+- [x] Skill quality checks and optimization suggestions, such as description clarity, length, discoverability, and structure.
 
 ## Usage
 
@@ -117,6 +117,9 @@ Common commands:
 ```bash
 skill-sync status
 skill-sync status --json
+skill-sync audit
+skill-sync audit ~/.codex/skills --min-score 60
+skill-sync audit ~/.codex/skills --json
 skill-sync pull
 skill-sync sync <skill-id>
 skill-sync update-local <skill-id>
@@ -127,6 +130,39 @@ skill-sync serve --port 4100
 Agents can edit tracked skills under `~/.codex/skills` or `~/.agents/skills`. Skill Sync detects local changes, copies them into the sync repo, commits, and pushes.
 
 If a conflict appears, do not overwrite silently. Resolve it through the Web UI or an explicit CLI/API action.
+
+### Skill Audit
+
+Run a local quality scan before syncing or publishing a skill:
+
+```bash
+skill-sync audit ~/.codex/skills
+```
+
+The audit checks:
+
+- required `name` and `description` frontmatter
+- description length and discoverability
+- clear Markdown title and workflow guidance
+- thin or oversized `SKILL.md` files
+- missing files referenced from `scripts/`, `templates/`, `assets/`, `examples/`, or `references/`
+- whether the skill has reusable supporting material
+
+Example output:
+
+```text
+Skill audit: /Users/me/.codex/skills
+Skills: 2 | Average score: 78 | Pass: 1 | Warn: 0 | Fail: 1
+
+PASS research-pack - 100/100
+  No issues found.
+
+FAIL thin - 22/100
+  [error] missing_frontmatter: SKILL.md is missing YAML frontmatter.
+    Fix: Add a frontmatter block with name and description.
+```
+
+See the full demo report in [docs/demo/skill-audit.md](docs/demo/skill-audit.md).
 
 ### Run from Source
 

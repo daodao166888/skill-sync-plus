@@ -1,7 +1,7 @@
 {
-  "name": "@nameczz/skill-sync",
+  "name": "@daodao166888/skill-sync-plus",
   "version": "0.1.3",
-  "description": "Local-first Web and CLI workbench for syncing AI agent skills through Git.",
+  "description": "Local-first Web and CLI workbench for syncing and auditing AI agent skills through Git.",
   "type": "module",
   "packageManager": "yarn@1.22.22",
   "bin": {
@@ -10,12 +10,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/nameczz/skill-sync.git"
+    "url": "git+ssh://git@github.com/daodao166888/skill-sync-plus.git"
   },
   "bugs": {
-    "url": "https://github.com/nameczz/skill-sync/issues"
+    "url": "https://github.com/daodao166888/skill-sync-plus/issues"
   },
-  "homepage": "https://github.com/nameczz/skill-sync#readme",
+  "homepage": "https://github.com/daodao166888/skill-sync-plus#readme",
   "keywords": [
     "codex",
     "skills",
